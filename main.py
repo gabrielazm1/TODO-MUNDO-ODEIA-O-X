@@ -3,7 +3,6 @@ import sys
 import math
 import random
 import os
-import numpy as np
 
 pygame.init()
 
@@ -51,3 +50,37 @@ F_MED   = font(28)
 F_SMALL = font(20)
 F_TINY  = font(16)
 F_INPUT = bold_font(32)
+
+def load_sheet(name):
+    path = os.path.join(ASSETS, name)
+    return pygame.image.load(path).convert_alpha()
+
+def extract_frame(sheet_surf, col, row, fw=32, fh=32):
+    frame = pygame.Surface((fw, fh), pygame.SRCALPHA)
+    frame.blit(sheet_surf, (0, 0), (col * fw, row * fh, fw, fh))
+    return frame
+
+def create_galaxy_bg(w, h):
+    surf = pygame.Surface((w, h))
+    surf.fill(DARK_BG)
+    for _ in range(6):
+        cx = random.randint(0, w)
+        cy = random.randint(0, h)
+        radius = random.randint(120, 320)
+        color = (random.randint(40, 100), 0, random.randint(80, 180))
+        for r in range(radius, 0, -10):
+            alpha_val = max(0, int(60 * (1 - r / radius)))
+            nebula = pygame.Surface((r*2, r*2), pygame.SRCALPHA)
+            pygame.draw.ellipse(nebula, (*color, alpha_val), (0, 0, r*2, r*2))
+            surf.blit(nebula, (cx - r, cy - r), special_flags=pygame.BLEND_RGBA_ADD)
+    for _ in range(300):
+        x = random.randint(0, w)
+        y = random.randint(0, h)
+        brightness = random.randint(120, 255)
+        size = random.choice([1, 1, 1, 2, 2, 3])
+        color = (brightness, brightness, min(255, brightness + random.randint(0, 60)))
+        if size == 1:
+            surf.set_at((x, y), color)
+        else:
+            pygame.draw.circle(surf, color, (x, y), size // 2)
+    return surf
