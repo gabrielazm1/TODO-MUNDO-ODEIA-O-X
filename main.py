@@ -84,3 +84,25 @@ def create_galaxy_bg(w, h):
         else:
             pygame.draw.circle(surf, color, (x, y), size // 2)
     return surf
+class Button:
+    def __init__(self, rect, text, font_obj=None, color=BTN_NORMAL, hover=BTN_HOVER):
+        self.rect  = pygame.Rect(rect)
+        self.text  = text
+        self.font  = font_obj or F_MED
+        self.color = color
+        self.hover = hover
+
+    def draw(self, surf):
+        mpos = pygame.mouse.get_pos()
+        col = self.hover if self.rect.collidepoint(mpos) else self.color
+        pygame.draw.rect(surf, (20, 0, 40), self.rect.move(3, 3), border_radius=12)
+        pygame.draw.rect(surf, col, self.rect, border_radius=12)
+        pygame.draw.rect(surf, LIGHT_PURPLE, self.rect, 2, border_radius=12)
+        lbl = self.font.render(self.text, True, WHITE)
+        surf.blit(lbl, lbl.get_rect(center=self.rect.center))
+
+    def clicked(self, event):
+        return (event.type == pygame.MOUSEBUTTONDOWN and
+                event.button == 1 and
+                self.rect.collidepoint(event.pos))
+
