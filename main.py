@@ -105,4 +105,19 @@ class Button:
         return (event.type == pygame.MOUSEBUTTONDOWN and
                 event.button == 1 and
                 self.rect.collidepoint(event.pos))
+class TwinkleStar:
+    def __init__(self):
+        self.reset()
 
+    def reset(self):
+        self.x     = random.randint(0, WIDTH)
+        self.y     = random.randint(0, HEIGHT)
+        self.max_r = random.uniform(1.5, 3.5)
+        self.phase = random.uniform(0, math.pi * 2)
+        self.speed = random.uniform(1.5, 4.0)
+        self.color = random.choice([WHITE, CYAN, LIGHT_PURPLE, (255,255,180)])
+
+    def draw(self, surf, t):
+        r = self.max_r * (0.5 + 0.5 * math.sin(self.phase + t * self.speed))
+        if r > 0.5:
+            pygame.draw.circle(surf, self.color, (int(self.x), int(self.y)), int(r))
