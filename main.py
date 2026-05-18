@@ -140,3 +140,60 @@ class TwinkleStar:
         panel.fill((20, 0, 50, alpha))
         surf.blit(panel, rect.topleft)
         pygame.draw.rect(surf, LIGHT_PURPLE, rect, 2, border_radius=10)
+
+print("Loading assets...")
+try:
+    char_sheet    = load_sheet("Character Model.png")
+    hair_sheet    = load_sheet("Hairs.png")
+    outfit_sheets = [load_sheet(f"Outfit{i}.png") for i in range(1, 7)]
+    heart_path_options = [
+        "Heart.png",
+        "Pixel Heart Sprite Sheet 32x32.png",
+        "Pixel Heart Sprite Sheet 16x16.png",
+    ]
+    heart_raw = None
+    for hp in heart_path_options:
+        full = os.path.join(ASSETS, hp)
+        if os.path.exists(full):
+            heart_raw = pygame.image.load(full).convert_alpha()
+            heart_frame_size = 32 if "32x32" in hp else (16 if "16x16" in hp else heart_raw.get_height())
+            heart_img = pygame.Surface((heart_frame_size, heart_frame_size), pygame.SRCALPHA)
+            heart_img.blit(heart_raw, (0, 0), (0, 0, heart_frame_size, heart_frame_size))
+            heart_img = pygame.transform.scale(heart_img, (38, 38))
+            break
+    if heart_raw is None:
+        raise Exception("Nenhuma imagem de coração encontrada em assets/")
+
+    star_path = os.path.join(ASSETS, "Estrela.png")
+    if os.path.exists(star_path):
+        raw_star = pygame.image.load(star_path).convert_alpha()
+        star_img = pygame.transform.scale(raw_star, (44, 44))
+    else:
+        star_img = None
+        print("Aviso: Estrela.png nao encontrado, usando desenho padrao")
+
+    new_gun_path = os.path.join(ASSETS, "New Piskel.png")
+    if os.path.exists(new_gun_path):
+        raw_gun = pygame.image.load(new_gun_path).convert_alpha()
+        gun_w   = 90
+        ratio   = gun_w / raw_gun.get_width()
+        gun_h   = max(1, int(raw_gun.get_height() * ratio))
+        gun_surf = pygame.transform.smoothscale(raw_gun, (gun_w, gun_h))
+    else:
+        gun_surf = extract_gun_from_sheet()
+        if gun_surf is None:
+            raise Exception("Gun extraction failed")
+    print(f"Gun size: {gun_surf.get_size()}")
+
+    space_bg_path = os.path.join(ASSETS, "cenario universo.png")
+    if os.path.exists(space_bg_path):
+        raw_bg   = pygame.image.load(space_bg_path).convert()
+        SPACE_BG = pygame.transform.smoothscale(raw_bg, (WIDTH, HEIGHT))
+    else:
+        SPACE_BG = None
+except Exception as e:
+    import traceback
+    print(f"Asset load error: {e}")
+    traceback.print_exc()
+    input("Pressione Enter para fechar...")
+    pygame.quit(); sys.exit()
