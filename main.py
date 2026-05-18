@@ -121,3 +121,22 @@ class TwinkleStar:
         r = self.max_r * (0.5 + 0.5 * math.sin(self.phase + t * self.speed))
         if r > 0.5:
             pygame.draw.circle(surf, self.color, (int(self.x), int(self.y)), int(r))
+    
+TWINKLES = [TwinkleStar() for _ in range(80)]
+
+    def draw_title(surf, text, y, color=GOLD):
+        shadow = F_TITLE.render(text, True, (80, 0, 120))
+        title  = F_TITLE.render(text, True, color)
+        surf.blit(shadow, shadow.get_rect(centerx=WIDTH//2+3, y=y+3))
+        surf.blit(title,  title.get_rect(centerx=WIDTH//2, y=y))
+
+    def draw_text(surf, text, y, color=WHITE, font_obj=None):
+        f = font_obj or F_MED
+        lbl = f.render(text, True, color)
+        surf.blit(lbl, lbl.get_rect(centerx=WIDTH//2, y=y))
+
+    def draw_panel(surf, rect, alpha=200):
+        panel = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
+        panel.fill((20, 0, 50, alpha))
+        surf.blit(panel, rect.topleft)
+        pygame.draw.rect(surf, LIGHT_PURPLE, rect, 2, border_radius=10)
