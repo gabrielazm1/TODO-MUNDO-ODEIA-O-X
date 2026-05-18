@@ -220,3 +220,65 @@ HAIR_OPTIONS = [
     {"name": "Curto Loiro",  "row": 5, "col": 1},
     {"name": "Curto Moreno", "row": 7, "col": 1},
 ]
+def compose_character(body_idx, outfit_idx, hair_idx, scale=4):
+    s      = 32
+    result = pygame.Surface((s, s), pygame.SRCALPHA)
+    body   = BODY_OPTIONS[body_idx]
+    outfit = OUTFIT_OPTIONS[outfit_idx]
+    hair   = HAIR_OPTIONS[hair_idx]
+    result.blit(extract_frame(char_sheet,                          body["skin_col"],    body["skin_row"]), (0, 0))
+    result.blit(extract_frame(outfit_sheets[outfit["sheet_idx"]], outfit["col"],        0),               (0, 0))
+    result.blit(extract_frame(hair_sheet,                          hair["col"],          hair["row"]),     (0, 0))
+    return pygame.transform.scale(result, (s * scale, s * scale))
+
+def get_preview_surf(body_idx, outfit_idx, hair_idx):
+    return compose_character(body_idx, outfit_idx, hair_idx, scale=5)
+
+random.seed(42)
+GALAXY_BG = create_galaxy_bg(WIDTH, HEIGHT)
+random.seed()
+
+state              = ST_MENU
+target_name        = ""
+body_sel           = 0
+outfit_sel         = 0
+hair_sel           = 0
+input_text         = ""
+t                  = 0.0
+input_cursor_timer = 0
+
+class GameState:
+    def _init_(self):
+        self.reset()
+
+    def reset(self):
+        self.target_lives  = 3
+        self.ammo          = 10
+        self.max_ammo      = 10
+        self.tx            = WIDTH  // 2
+        self.ty            = HEIGHT // 2
+        self.tvx           = 3.6
+        self.tvy           = 3.1
+        self.speed_mult    = 1.0
+        self.target_char   = None
+        self.hit_flash     = 0
+        self.miss_flash    = 0
+        self.shot_effects  = []
+        self.stars         = []
+        self.star_timer    = 0
+        self.star_bonus    = 3
+        self.game_over     = False
+        self.shots_fired   = 0
+        self.dodge_timer   = 0
+
+GS = GameState()
+
+def start_game():
+    GS.reset()
+    GS.target_char = compose_character(body_sel, outfit_sel, hair_sel, scale=4)
+    GS.tx  = random.randint(200, WIDTH  - 200)
+    GS.ty  = random.randint(150, HEIGHT - 150)
+    angle  = random.uniform(0, math.pi * 2)
+    speed  = 4.1
+    GS.tvx = math.cos(angle) * speed
+    GS.tvy = math.sin(angle) * speed
