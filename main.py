@@ -197,3 +197,26 @@ except Exception as e:
     traceback.print_exc()
     input("Pressione Enter para fechar...")
     pygame.quit(); sys.exit()
+
+BODY_OPTIONS = [
+    {"name": "Menina Branca", "skin_row": 0, "skin_col": 1, "default_outfit": 0},
+    {"name": "Menino Branco", "skin_row": 2, "skin_col": 1, "default_outfit": 3},
+    {"name": "Menina Negra",  "skin_row": 3, "skin_col": 1, "default_outfit": 0},
+    {"name": "Menino Negro",  "skin_row": 5, "skin_col": 1, "default_outfit": 3},
+]
+
+OUTFIT_OPTIONS = [
+    {"name": "Vestido Branco", "sheet_idx": 0, "col": 1},
+    {"name": "Vestido Rosa",   "sheet_idx": 1, "col": 1},
+    {"name": "Saia Azul",      "sheet_idx": 2, "col": 1},
+    {"name": "Camisa Laranja", "sheet_idx": 3, "col": 1},
+    {"name": "Agasalho Verde", "sheet_idx": 4, "col": 1},
+    {"name": "Calça Escura",   "sheet_idx": 5, "col": 1},
+]
+
+HAIR_OPTIONS = [
+    {"name": "Longo Loiro",  "row": 4, "col": 1},
+    {"name": "Longo Moreno", "row": 0, "col": 1},
+    {"name": "Curto Loiro",  "row": 5, "col": 1},
+    {"name": "Curto Moreno", "row": 7, "col": 1},
+]
