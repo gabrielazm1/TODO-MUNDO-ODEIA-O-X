@@ -1,110 +1,35 @@
-# 🎮 Todo Mundo Odeia...
+## Todo Mundo Odeia o X
 
-> O jogo de mira mais pessoal do mundo — crie seu alvo e elimine-o!
-
----
-
-## 👥 Membros do Grupo
-*(Adicione os nomes dos membros aqui)*
+Um jogo de tiro feito em **Python + Pygame**, com tema espacial e personagem customizável. O jogador cria seu próprio "alvo" (escolhendo corpo, roupa, cabelo e nome) e precisa derrotá-lo antes que a munição acabe — enquanto o alvo se move pelo cenário e fica cada vez mais rápido a cada tiro disparado.
 
 ---
 
-## 🕹️ Como Jogar
+## Integrantes do Grupo
 
-### Instalação
+- Camila Pihal Borba
+- Gabriela Ferreira Loiola
+- Gabriela Zanoide de Moraes
 
-1. Instale o Python 3.10 ou superior
-2. Instale as dependências:
 
-```bash
-pip install pygame pillow numpy
-```
+## Sobre o Jogo
 
-3. Execute o jogo:
+1. Digita o **nome** do alvo que deseja "eliminar";
+2. Personaliza o personagem escolhendo **corpo, roupa e cabelo**;
+3. Entra em uma arena espacial onde deve **acertar o alvo 3 vezes para ganhar** com o mouse;
+4. Possui apenas **10 munições iniciais** — cada tiro é munição perdida;
+5. Pode acertar **estrelas amarelas** que aparecem aleatoriamente no cenário para ganhar **+3 munições extras**;
+6. Vence se zerar as vidas do alvo; perde se ficar sem munição.
 
-```bash
-python main.py
-```
-
-### Estrutura do Projeto
-
-```
-todo_mundo_odeia/
-├── main.py          # Código principal do jogo
-├── README.md        # Este arquivo
-└── assets/
-    ├── Character Model.png   # Sprite sheet de corpos (MetroCity)
-    ├── Hairs.png             # Sprite sheet de cabelos (MetroCity)
-    ├── Outfit1-6.png         # Sprite sheets de roupas (MetroCity)
-    ├── Heart.png             # Ícone de coração (vida do alvo)
-    └── gun_sheet.png         # Sprite sheet da arma
-```
+Além disso, a dificuldade aumenta progressivamente: a cada tiro disparado o alvo acelera e ele ainda muda de direção sozinho de tempos em tempos para dificultar a mira.
 
 ---
+## Como Rodar o Jogo
+## Pré-requisitos
+Ter instalado Python 3.8 ou superior e o pip (gerenciador de pacotes do Python).
+## Bibliotecas Necessárias
+A biblioteca pygame. A biblioteca numpy para o processamento de imagens e a biblioteca Pillow (importada como PIL) é usada para manipulação avançada da sprite da arma.
+## Estrutura de Pastas
+Para o jogo funcionar corretamente, dentro da pasta assets estam os seguintes arquivos: Character Model.png, Hairs.png, Outfit1.png, Outfit2.png, Outfit3.png, Outfit4.png, Outfit5.png, Outfit6.png, Heart.png (ou Pixel Heart Sprite Sheet 32x32.png / 16x16.png), Estrela.png, New Piskel.png (sprite da arma) e cenario universo.png (fundo do jogo).
 
-## 🎯 Regras do Jogo
-
-- **Objetivo:** Matar o alvo antes que suas munições acabem!
-- 🖱️ Mire com o mouse e **clique** para atirar
-- ❤️ O alvo possui **3 vidas** (corações no canto superior direito)
-- ⚡ A cada acerto, o alvo fica **mais rápido**
-- 🔫 Você começa com **15 munições**
-- ⭐ Estrelas douradas aparecem no cenário — acerte-as para ganhar **+3 munições**
-
----
-
-## 🖥️ As 8 Telas do Jogo
-
-| # | Tela | Descrição |
-|---|------|-----------|
-| 1 | Menu Principal | Botões "Jogar" e "Instruções" |
-| 2 | Instruções | Regras detalhadas do jogo |
-| 3 | Nome do Alvo | "Todo mundo odeia..." + campo de texto |
-| 4 | Escolha do Corpo | 4 opções: menina/menino branca(o)/negra(o) |
-| 5 | Escolha da Roupa | 6 opções: 3 femininas + 3 masculinas |
-| 6 | Escolha do Cabelo | 4 opções: longo loiro, longo moreno, curto loiro, curto moreno |
-| 7 | Prévia do Personagem | Composição final antes do jogo |
-| 8 | O Jogo | Atire no alvo com a arma seguindo o mouse |
-| + | Vitória / Derrota | Tela final com resultado |
-
----
-
-## 🛠️ Tecnologias Utilizadas
-
-- **Python 3** — Linguagem principal
-- **Pygame** — Motor gráfico e de eventos
-- **Pillow (PIL)** — Processamento de imagens (extração da arma)
-- **NumPy** — Manipulação de arrays de pixels
-
----
-
-## 🎨 Assets Externos
-
-- **MetroCity Character Pack** — Sprites de personagens, roupas e cabelos
-  - Fonte: asset pack RPG (MetroCity)
-- **Heart sprite** — Ícone de coração para vidas
-- **Gun sprite sheet** — Sprite sheet da arma usada como cursor
-
----
-
-## 🤖 Uso de IA
-
-*(Preencha aqui conforme o uso durante o desenvolvimento)*
-
-Exemplo: "A estrutura inicial do `main.py` foi desenvolvida com auxílio de IA generativa. Todo o código foi revisado, entendido e adaptado pelos membros do grupo."
-
----
-
-## 📹 Vídeo de Apresentação
-
-*(Adicione aqui o link do vídeo no YouTube/Vimeo mostrando o jogo funcionando)*
-
----
-
-## 🔧 Dependências
-
-```
-pygame>=2.0.0
-Pillow>=9.0.0
-numpy>=1.20.0
-```
+## Executando o Jogo
+Abra o terminal na pasta do projeto e rode o comando: python main.py
