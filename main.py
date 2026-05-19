@@ -344,3 +344,50 @@ def shoot(mx, my):
 
     if GS.ammo <= 0 and GS.target_lives > 0:
         state = ST_LOSE
+
+def draw_bg(surf, t_val):
+    if SPACE_BG is not None:
+        surf.blit(SPACE_BG, (0, 0))
+        return
+    surf.blit(GALAXY_BG, (0, 0))
+    for star in TWINKLES:
+        star.draw(surf, t_val)
+
+def draw_gun_cursor(surf, mx, my):
+    if gun_surf is None:
+        pygame.draw.circle(surf, CYAN, (mx, my), 8, 2)
+        return
+    gun_w, gun_h = gun_surf.get_size()
+    draw_x = max(0, mx - gun_w + 8)
+    draw_y = my - gun_h // 2
+    surf.blit(gun_surf, (draw_x, draw_y))
+    pygame.draw.circle(surf, CYAN, (mx, my), 4, 1)
+
+def draw_ammo_bar(surf):
+    bar_h = 60
+    bar_y = HEIGHT - bar_h
+    bar_surf = pygame.Surface((WIDTH, bar_h), pygame.SRCALPHA)
+    bar_surf.fill((10, 0, 30, 210))
+    surf.blit(bar_surf, (0, bar_y))
+    pygame.draw.line(surf, LIGHT_PURPLE, (0, bar_y), (WIDTH, bar_y), 1)
+
+    gun_w, gun_h = gun_surf.get_size()
+    icon_scale = min(1.0, (bar_h - 14) / max(1, gun_h))
+    icon_w = max(1, int(gun_w * icon_scale))
+    icon_h = max(1, int(gun_h * icon_scale))
+    icon   = pygame.transform.smoothscale(gun_surf, (icon_w, icon_h))
+
+    spacing = icon_w + 8
+    start_x = (WIDTH - GS.max_ammo * spacing) // 2
+    icon_y  = bar_y + (bar_h - icon_h) // 2
+
+    for i in range(GS.max_ammo):
+        x = start_x + i * spacing
+        if i < GS.ammo:
+            surf.blit(icon, (x, icon_y))
+        else:
+            cx = x + icon_w // 2
+            cy = icon_y + icon_h // 2
+            r  = max(4, icon_h // 2 - 2)
+            pygame.draw.line(surf, RED, (cx-r, cy-r), (cx+r, cy+r), 2)
+            pygame.draw.line(surf, RED, (cx+r, cy-r), (cx-r, cy+r), 2)
