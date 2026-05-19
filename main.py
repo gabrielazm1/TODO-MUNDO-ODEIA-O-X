@@ -282,3 +282,65 @@ def start_game():
     speed  = 4.1
     GS.tvx = math.cos(angle) * speed
     GS.tvy = math.sin(angle) * speed
+
+def move_target():
+    # Desvio aleatório periódico
+    GS.dodge_timer += 1
+    if GS.dodge_timer > random.randint(40, 90):
+        GS.dodge_timer = 0
+        angle = random.uniform(0, math.pi * 2)
+        cur_speed = math.hypot(GS.tvx, GS.tvy)
+        GS.tvx = math.cos(angle) * cur_speed
+        GS.tvy = math.sin(angle) * cur_speed
+
+    GS.tx += GS.tvx * GS.speed_mult
+    GS.ty += GS.tvy * GS.speed_mult
+    char_w = GS.target_char.get_width()
+    char_h = GS.target_char.get_height()
+    margin = 40
+    if GS.tx < margin:                   GS.tx = margin;                   GS.tvx =  abs(GS.tvx)
+    if GS.tx > WIDTH  - char_w - margin: GS.tx = WIDTH - char_w - margin;  GS.tvx = -abs(GS.tvx)
+    if GS.ty < margin + 40:              GS.ty = margin + 40;              GS.tvy =  abs(GS.tvy)
+    if GS.ty > HEIGHT - char_h - margin: GS.ty = HEIGHT - char_h - margin; GS.tvy = -abs(GS.tvy)
+
+def update_stars():
+    GS.star_timer += 1
+    if GS.star_timer > random.randint(180, 320):
+        GS.star_timer = 0
+        if len(GS.stars) < 2:
+            GS.stars.append([random.randint(60, WIDTH-60), random.randint(80, HEIGHT-80), 180, 180])
+    GS.stars = [[x, y, l-1, ml] for x, y, l, ml in GS.stars if l > 1]
+
+def shoot(mx, my):
+    global state
+    if GS.ammo <= 0:
+        return
+    GS.ammo -= 1
+    GS.shots_fired += 1
+
+    # A cada tiro o alvo acelera
+    GS.speed_mult += 0.25
+
+    for star in GS.stars[:]:
+        sx, sy, l, ml = star
+        if math.hypot(mx - sx, my - sy) < 28:
+            GS.ammo = min(GS.ammo + GS.star_bonus, GS.max_ammo)
+            GS.stars.remove(star)
+            GS.shot_effects.append([sx, sy, 30, 30, GOLD])
+            return
+
+    char_w = GS.target_char.get_width()
+    char_h = GS.target_char.get_height()
+    if pygame.Rect(GS.tx, GS.ty, char_w, char_h).collidepoint(mx, my):
+        GS.target_lives -= 1
+        GS.hit_flash = 20
+        GS.shot_effects.append([mx, my, 25, 25, RED])
+        GS.speed_mult += 0.35
+        if GS.target_lives <= 0:
+            state = ST_WIN
+    else:
+        GS.miss_flash = 8
+        GS.shot_effects.append([mx, my, 15, 15, CYAN])
+
+    if GS.ammo <= 0 and GS.target_lives > 0:
+        state = ST_LOSE
