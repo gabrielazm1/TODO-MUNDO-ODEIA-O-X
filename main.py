@@ -391,3 +391,67 @@ def draw_ammo_bar(surf):
             r  = max(4, icon_h // 2 - 2)
             pygame.draw.line(surf, RED, (cx-r, cy-r), (cx+r, cy+r), 2)
             pygame.draw.line(surf, RED, (cx+r, cy-r), (cx-r, cy+r), 2)
+def render_menu(events):
+    global state
+    draw_bg(screen, t)
+    draw_title(screen, "TODO MUNDO ODEIA", 80)
+    draw_title(screen, "...", 138, LIGHT_PURPLE)
+    btn_play = Button((WIDTH//2 - 120, 290, 240, 60), "Jogar", F_BIG)
+    btn_info = Button((WIDTH//2 - 120, 370, 240, 60), "Instruções", F_MED, BTN_NORMAL, DIM_PURPLE)
+    btn_play.draw(screen)
+    btn_info.draw(screen)
+    for ev in events:
+        if btn_play.clicked(ev): state = ST_NAME
+        if btn_info.clicked(ev): state = ST_INSTRUCT
+def render_instructions(events):
+    global state
+    draw_bg(screen, t)
+    draw_panel(screen, pygame.Rect(60, 60, WIDTH-120, HEIGHT-120), alpha=230)
+    draw_title(screen, "Instruções", 80)
+    lines = [
+        ("Objetivo:", GOLD, F_MED),
+        ("Mate o alvo antes que suas munições acabem!", WHITE, F_SMALL),
+        ("", WHITE, F_SMALL),
+        ("Mire com o mouse e clique para atirar.", CYAN, F_SMALL),
+        ("O alvo possui 3 vidas representadas por corações.", LIGHT_PURPLE, F_SMALL),
+        ("A cada tiro o alvo fica mais rápido!", RED, F_SMALL),
+        ("Você começa com 10 munições.", WHITE, F_SMALL),
+        ("Estrelas aparecem às vezes — acerte para ganhar mais munições!", GOLD, F_SMALL),
+        ("", WHITE, F_SMALL),
+        ("Boa sorte... você vai precisar!", PINK, F_MED),
+    ]
+    y = 175
+    for text, color, fnt in lines:
+        lbl = fnt.render(text, True, color)
+        screen.blit(lbl, (90, y))
+        y += fnt.size(text)[1] + 4
+    btn_back = Button((WIDTH//2 - 100, HEIGHT-100, 200, 50), "Voltar")
+    btn_back.draw(screen)
+    for ev in events:
+        if btn_back.clicked(ev): state = ST_MENU
+
+
+def render_name_input(events):
+    global state, input_text, target_name, input_cursor_timer
+    draw_bg(screen, t)
+    draw_title(screen, "Todo mundo odeia...", 80)
+    draw_panel(screen, pygame.Rect(100, 180, WIDTH-200, 220))
+    draw_text(screen, "Qual é o nome do alvo?", 200, LIGHT_PURPLE, F_MED)
+    field_rect = pygame.Rect(WIDTH//2 - 220, 255, 440, 55)
+    pygame.draw.rect(screen, (30, 0, 60), field_rect, border_radius=8)
+    pygame.draw.rect(screen, LIGHT_PURPLE, field_rect, 2, border_radius=8)
+    input_cursor_timer += 1
+    cursor_char = "|" if (input_cursor_timer // 30) % 2 == 0 else ""
+    lbl = F_INPUT.render(input_text + cursor_char, True, WHITE)
+    screen.blit(lbl, (field_rect.x + 15, field_rect.y + 10))
+    if not input_text:
+        hint = F_SMALL.render("Digite o nome e pressione Enter", True, (150, 100, 200))
+        screen.blit(hint, hint.get_rect(centerx=WIDTH//2, y=330))
+    for ev in events:
+        if ev.type == pygame.KEYDOWN:
+            if ev.key == pygame.K_RETURN and input_text.strip():
+                target_name = input_text.strip(); state = ST_BODY
+            elif ev.key == pygame.K_BACKSPACE:
+                input_text = input_text[:-1]
+            elif len(input_text) < 24 and ev.unicode.isprintable():
+                input_text += ev.unicode
