@@ -455,3 +455,56 @@ def render_name_input(events):
                 input_text = input_text[:-1]
             elif len(input_text) < 24 and ev.unicode.isprintable():
                 input_text += ev.unicode
+def render_selection(events, title, options, current_sel, images, next_state, prev_state):
+    global body_sel, outfit_sel, hair_sel
+    draw_bg(screen, t)
+    draw_title(screen, title, 30)
+    cols    = min(4, len(options))
+    cell_w, cell_h = 160, 180
+    start_x = (WIDTH - (cols * cell_w + (cols-1) * 20)) // 2
+    boxes = []
+    for i, img in enumerate(images):
+        x = start_x + (i % cols) * (cell_w + 20)
+        y = 120     + (i // cols) * (cell_h + 10)
+        box = pygame.Rect(x, y, cell_w, cell_h)
+        boxes.append(box)
+        is_sel = (i == current_sel)
+        pygame.draw.rect(screen, (60,0,120) if is_sel else (20,0,50), box, border_radius=10)
+        pygame.draw.rect(screen, GOLD if is_sel else LIGHT_PURPLE, box, 3, border_radius=10)
+        iw, ih = img.get_size()
+        screen.blit(img, (x + (cell_w-iw)//2, y + (cell_h-ih)//2))
+    btn_next = Button((WIDTH-200, HEIGHT-70, 180, 50), "Próximo", F_MED)
+    btn_back = Button((20, HEIGHT-70, 150, 50), "Voltar", F_MED)
+    btn_next.draw(screen); btn_back.draw(screen)
+    for ev in events:
+        if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 1:
+            for i, box in enumerate(boxes):
+                if box.collidepoint(ev.pos):
+                    if next_state == ST_OUTFIT:
+                        global body_sel;   body_sel   = i
+                    elif next_state == ST_HAIR:
+                        global outfit_sel; outfit_sel = i
+                    elif next_state == ST_PREVIEW:
+                        global hair_sel;   hair_sel   = i
+        if btn_next.clicked(ev):
+            global state; state = next_state
+        if btn_back.clicked(ev):
+            state = prev_state
+
+
+def render_preview(events):
+    global state
+    draw_bg(screen, t)
+    draw_panel(screen, pygame.Rect(50, 50, WIDTH-100, HEIGHT-100))
+    draw_title(screen, "Seu personagem", 70)
+    char_surf = get_preview_surf(body_sel, outfit_sel, hair_sel)
+    cw, ch = char_surf.get_size()
+    cx, cy = WIDTH//2 - cw//2, HEIGHT//2 - ch//2 + 20
+    screen.blit(char_surf, (cx, cy))
+    draw_text(screen, f"Nome: {target_name}", cy+ch+20, GOLD, F_MED)
+    btn_start = Button((WIDTH//2-130, HEIGHT-90, 260, 60), "Começar o jogo!", F_BIG)
+    btn_back  = Button((20, HEIGHT-70, 150, 50), "Voltar", F_MED)
+    btn_start.draw(screen); btn_back.draw(screen)
+    for ev in events:
+        if btn_start.clicked(ev): start_game(); state = ST_GAME
+        if btn_back.clicked(ev):  state = ST_HAIR
