@@ -666,7 +666,7 @@ def render_lose(events):
         if btn_retry.clicked(ev): start_game(); state = ST_GAME
         if btn_menu.clicked(ev):  input_text = ""; state = ST_MENU
 
-# ─── Build Selection Images ───────────────────────────────────────
+# ── Construir personagens ────────────────────────────────────────
 def make_body_images():
     imgs = []
     for b in BODY_OPTIONS:
