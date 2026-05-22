@@ -508,3 +508,71 @@ def render_preview(events):
     for ev in events:
         if btn_start.clicked(ev): start_game(); state = ST_GAME
         if btn_back.clicked(ev):  state = ST_HAIR
+        def render_game(events):
+    global state
+    draw_bg(screen, t)
+    move_target()
+    update_stars()
+
+    if GS.hit_flash > 0:
+        flash = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        flash.fill((255, 0, 0, int(80 * GS.hit_flash / 20)))
+        screen.blit(flash, (0, 0))
+        GS.hit_flash -= 1
+
+    if GS.miss_flash > 0:
+        flash = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        flash.fill((0, 100, 200, int(40 * GS.miss_flash / 8)))
+        screen.blit(flash, (0, 0))
+        GS.miss_flash -= 1
+
+    for sx, sy, life, max_life in GS.stars:
+        ratio = life / max_life
+        pulse = 0.85 + 0.15 * math.sin(t * 5)
+        if star_img is not None:
+            base_w, base_h = star_img.get_size()
+            sw = max(1, int(base_w * pulse))
+            sh = max(1, int(base_h * pulse))
+            star_scaled = pygame.transform.scale(star_img, (sw, sh))
+            star_scaled.set_alpha(int(255 * ratio))
+            screen.blit(star_scaled, star_scaled.get_rect(center=(sx, sy)))
+        else:
+            star_r = int(22 * pulse)
+            sh = star_r * 2
+            ss = pygame.Surface((star_r*2+4, star_r*2+4), pygame.SRCALPHA)
+            pygame.draw.circle(ss, (*GOLD, int(200*ratio)), (star_r+2, star_r+2), star_r)
+            screen.blit(ss, (sx-star_r-2, sy-star_r-2))
+        bonus_lbl = F_TINY.render(f"+{GS.star_bonus}", True, WHITE)
+        screen.blit(bonus_lbl, bonus_lbl.get_rect(centerx=sx, y=sy + sh//2 + 2))
+
+    GS.shot_effects = [[x, y, l-1, ml, c] for x, y, l, ml, c in GS.shot_effects if l > 0]
+    for sx, sy, life, max_life, color in GS.shot_effects:
+        ratio = life / max_life
+        r = int(30 * (1 - ratio))
+        es = pygame.Surface((r*2+2, r*2+2), pygame.SRCALPHA)
+        pygame.draw.circle(es, (*color, int(220*ratio)), (r+1, r+1), max(1, r))
+        screen.blit(es, (sx-r-1, sy-r-1))
+
+    name_lbl = F_SMALL.render(target_name, True, RED)
+    tw = GS.target_char.get_width()
+    screen.blit(name_lbl, name_lbl.get_rect(centerx=GS.tx+tw//2, y=GS.ty-28))
+    screen.blit(GS.target_char, (int(GS.tx), int(GS.ty)))
+
+    # HUD topo
+    hud = pygame.Surface((WIDTH, 50), pygame.SRCALPHA)
+    hud.fill((10, 0, 30, 200))
+    screen.blit(hud, (0, 0))
+    pygame.draw.line(screen, LIGHT_PURPLE, (0, 50), (WIDTH, 50), 1)
+    for i in range(max(0, GS.target_lives)):
+        screen.blit(heart_img, (WIDTH-50-i*46, 5))
+    spd_lbl = F_TINY.render(f"Velocidade: x{GS.speed_mult:.1f}", True, LIGHT_PURPLE)
+    screen.blit(spd_lbl, spd_lbl.get_rect(centerx=WIDTH//2, y=16))
+    screen.blit(F_TINY.render(f"Tiros: {GS.ammo}/{GS.max_ammo}", True, CYAN), (16, 16))
+
+    draw_ammo_bar(screen)
+
+    mx, my = pygame.mouse.get_pos()
+    for ev in events:
+        if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 1:
+            shoot(mx, my)
+    draw_gun_cursor(screen, mx, my)
