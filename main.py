@@ -665,3 +665,79 @@ def render_lose(events):
     for ev in events:
         if btn_retry.clicked(ev): start_game(); state = ST_GAME
         if btn_menu.clicked(ev):  input_text = ""; state = ST_MENU
+
+# ─── Build Selection Images ───────────────────────────────────────
+def make_body_images():
+    imgs = []
+    for b in BODY_OPTIONS:
+        s = pygame.Surface((32, 32), pygame.SRCALPHA)
+        s.blit(extract_frame(char_sheet, b["skin_col"], b["skin_row"]), (0,0))
+        imgs.append(pygame.transform.scale(s, (110, 110)))
+    return imgs
+
+def make_outfit_images():
+    imgs = []
+    for o in OUTFIT_OPTIONS:
+        s = pygame.Surface((32, 32), pygame.SRCALPHA)
+        s.blit(extract_frame(outfit_sheets[o["sheet_idx"]], o["col"], 0), (0,0))
+        imgs.append(pygame.transform.scale(s, (100, 100)))
+    return imgs
+
+def make_hair_images():
+    imgs = []
+    for h in HAIR_OPTIONS:
+        s = pygame.Surface((32, 32), pygame.SRCALPHA)
+        s.blit(extract_frame(hair_sheet, h["col"], h["row"]), (0,0))
+        imgs.append(pygame.transform.scale(s, (100, 100)))
+    return imgs
+
+print("Building selection images...")
+BODY_IMGS   = make_body_images()
+OUTFIT_IMGS = make_outfit_images()
+HAIR_IMGS   = make_hair_images()
+print("Done. Starting game loop.")
+
+# ─── Main Loop ────────────────────────────────────────────────────
+def main():
+    global t, state, body_sel, outfit_sel, hair_sel
+
+    while True:
+        events = []
+        for ev in pygame.event.get():
+            if ev.type == pygame.QUIT:
+                pygame.quit(); sys.exit()
+            if ev.type == pygame.KEYDOWN and ev.key == pygame.K_ESCAPE:
+                if state == ST_GAME: state = ST_MENU
+                else: pygame.quit(); sys.exit()
+            events.append(ev)
+
+        t += 1 / FPS
+        pygame.mouse.set_visible(state != ST_GAME)
+
+        if   state == ST_MENU:     render_menu(events)
+        elif state == ST_INSTRUCT: render_instructions(events)
+        elif state == ST_NAME:     render_name_input(events)
+        elif state == ST_BODY:
+            render_selection(events, "Escolha o corpo",  BODY_OPTIONS,   body_sel,
+                             BODY_IMGS,   ST_OUTFIT,  ST_NAME)
+        elif state == ST_OUTFIT:
+            render_selection(events, "Escolha a roupa",  OUTFIT_OPTIONS, outfit_sel,
+                             OUTFIT_IMGS, ST_HAIR,    ST_BODY)
+        elif state == ST_HAIR:
+            render_selection(events, "Escolha o cabelo", HAIR_OPTIONS,   hair_sel,
+                             HAIR_IMGS,   ST_PREVIEW, ST_OUTFIT)
+        elif state == ST_PREVIEW:  render_preview(events)
+        elif state == ST_GAME:     render_game(events)
+        elif state == ST_WIN:      render_win(events)
+        elif state == ST_LOSE:     render_lose(events)
+
+        pygame.display.flip()
+        clock.tick(FPS)
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\nJogo encerrado pelo usuario.")
+        pygame.quit()
+        sys.exit()
