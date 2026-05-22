@@ -3,6 +3,7 @@ import sys
 import math
 import random
 import os
+import numpy as np
 
 pygame.init()
 
@@ -60,6 +61,33 @@ def extract_frame(sheet_surf, col, row, fw=32, fh=32):
     frame.blit(sheet_surf, (0, 0), (col * fw, row * fh, fw, fh))
     return frame
 
+def extract_gun_from_sheet():
+    from PIL import Image
+    import numpy as np
+    gun_full = Image.open(os.path.join(ASSETS, "gun_sheet.png"))
+    gun_frame = gun_full.crop((1115, 1025, 1683, 1632))
+    arr2 = np.array(gun_frame)
+    nonblack = arr2.max(axis=2) > 10
+    rows_c = np.where(nonblack.any(axis=1))[0]
+    cols_c = np.where(nonblack.any(axis=0))[0]
+    if len(rows_c) == 0 or len(cols_c) == 0:
+        return None
+    gun_tight = gun_frame.crop((cols_c[0], rows_c[0], cols_c[-1]+1, rows_c[-1]+1))
+    gun_rgba = gun_tight.convert("RGBA")
+    data = np.array(gun_rgba)
+    is_dark = (data[:,:,0] < 25) & (data[:,:,1] < 25) & (data[:,:,2] < 25)
+    data[is_dark, 3] = 0
+    from PIL import Image as PILImage
+    gun_pil = PILImage.fromarray(data)
+    target_w = 90
+    ratio = target_w / gun_pil.width
+    gun_pil = gun_pil.resize((target_w, int(gun_pil.height * ratio)), PILImage.LANCZOS)
+    import io
+    buf = io.BytesIO()
+    gun_pil.save(buf, format="PNG")
+    buf.seek(0)
+    return pygame.image.load(buf).convert_alpha()
+
 def create_galaxy_bg(w, h):
     surf = pygame.Surface((w, h))
     surf.fill(DARK_BG)
@@ -84,6 +112,7 @@ def create_galaxy_bg(w, h):
         else:
             pygame.draw.circle(surf, color, (x, y), size // 2)
     return surf
+
 class Button:
     def __init__(self, rect, text, font_obj=None, color=BTN_NORMAL, hover=BTN_HOVER):
         self.rect  = pygame.Rect(rect)
@@ -105,6 +134,7 @@ class Button:
         return (event.type == pygame.MOUSEBUTTONDOWN and
                 event.button == 1 and
                 self.rect.collidepoint(event.pos))
+
 class TwinkleStar:
     def __init__(self):
         self.reset()
@@ -198,6 +228,9 @@ except Exception as e:
     input("Pressione Enter para fechar...")
     pygame.quit(); sys.exit()
 
+# ─── Character Options ────────────────────────────────────────────
+# Linhas com pele clara: 0, 1, 2, 4
+# Linhas com pele escura: 3, 5
 BODY_OPTIONS = [
     {"name": "Menina Branca", "skin_row": 0, "skin_col": 1, "default_outfit": 0},
     {"name": "Menino Branco", "skin_row": 2, "skin_col": 1, "default_outfit": 3},
@@ -220,6 +253,7 @@ HAIR_OPTIONS = [
     {"name": "Curto Loiro",  "row": 5, "col": 1},
     {"name": "Curto Moreno", "row": 7, "col": 1},
 ]
+
 def compose_character(body_idx, outfit_idx, hair_idx, scale=4):
     s      = 32
     result = pygame.Surface((s, s), pygame.SRCALPHA)
@@ -248,7 +282,7 @@ t                  = 0.0
 input_cursor_timer = 0
 
 class GameState:
-    def _init_(self):
+    def __init__(self):
         self.reset()
 
     def reset(self):
@@ -391,6 +425,9 @@ def draw_ammo_bar(surf):
             r  = max(4, icon_h // 2 - 2)
             pygame.draw.line(surf, RED, (cx-r, cy-r), (cx+r, cy+r), 2)
             pygame.draw.line(surf, RED, (cx+r, cy-r), (cx-r, cy+r), 2)
+
+# ─── Screen Renderers ─────────────────────────────────────────────
+
 def render_menu(events):
     global state
     draw_bg(screen, t)
@@ -403,6 +440,8 @@ def render_menu(events):
     for ev in events:
         if btn_play.clicked(ev): state = ST_NAME
         if btn_info.clicked(ev): state = ST_INSTRUCT
+
+
 def render_instructions(events):
     global state
     draw_bg(screen, t)
@@ -455,6 +494,8 @@ def render_name_input(events):
                 input_text = input_text[:-1]
             elif len(input_text) < 24 and ev.unicode.isprintable():
                 input_text += ev.unicode
+
+
 def render_selection(events, title, options, current_sel, images, next_state, prev_state):
     global body_sel, outfit_sel, hair_sel
     draw_bg(screen, t)
@@ -508,3 +549,119 @@ def render_preview(events):
     for ev in events:
         if btn_start.clicked(ev): start_game(); state = ST_GAME
         if btn_back.clicked(ev):  state = ST_HAIR
+
+
+def render_game(events):
+    global state
+    draw_bg(screen, t)
+    move_target()
+    update_stars()
+
+    if GS.hit_flash > 0:
+        flash = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        flash.fill((255, 0, 0, int(80 * GS.hit_flash / 20)))
+        screen.blit(flash, (0, 0))
+        GS.hit_flash -= 1
+
+    if GS.miss_flash > 0:
+        flash = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+        flash.fill((0, 100, 200, int(40 * GS.miss_flash / 8)))
+        screen.blit(flash, (0, 0))
+        GS.miss_flash -= 1
+
+    for sx, sy, life, max_life in GS.stars:
+        ratio = life / max_life
+        pulse = 0.85 + 0.15 * math.sin(t * 5)
+        if star_img is not None:
+            base_w, base_h = star_img.get_size()
+            sw = max(1, int(base_w * pulse))
+            sh = max(1, int(base_h * pulse))
+            star_scaled = pygame.transform.scale(star_img, (sw, sh))
+            star_scaled.set_alpha(int(255 * ratio))
+            screen.blit(star_scaled, star_scaled.get_rect(center=(sx, sy)))
+        else:
+            star_r = int(22 * pulse)
+            sh = star_r * 2
+            ss = pygame.Surface((star_r*2+4, star_r*2+4), pygame.SRCALPHA)
+            pygame.draw.circle(ss, (*GOLD, int(200*ratio)), (star_r+2, star_r+2), star_r)
+            screen.blit(ss, (sx-star_r-2, sy-star_r-2))
+        bonus_lbl = F_TINY.render(f"+{GS.star_bonus}", True, WHITE)
+        screen.blit(bonus_lbl, bonus_lbl.get_rect(centerx=sx, y=sy + sh//2 + 2))
+
+    GS.shot_effects = [[x, y, l-1, ml, c] for x, y, l, ml, c in GS.shot_effects if l > 0]
+    for sx, sy, life, max_life, color in GS.shot_effects:
+        ratio = life / max_life
+        r = int(30 * (1 - ratio))
+        es = pygame.Surface((r*2+2, r*2+2), pygame.SRCALPHA)
+        pygame.draw.circle(es, (*color, int(220*ratio)), (r+1, r+1), max(1, r))
+        screen.blit(es, (sx-r-1, sy-r-1))
+
+    name_lbl = F_SMALL.render(target_name, True, RED)
+    tw = GS.target_char.get_width()
+    screen.blit(name_lbl, name_lbl.get_rect(centerx=GS.tx+tw//2, y=GS.ty-28))
+    screen.blit(GS.target_char, (int(GS.tx), int(GS.ty)))
+
+    # HUD topo
+    hud = pygame.Surface((WIDTH, 50), pygame.SRCALPHA)
+    hud.fill((10, 0, 30, 200))
+    screen.blit(hud, (0, 0))
+    pygame.draw.line(screen, LIGHT_PURPLE, (0, 50), (WIDTH, 50), 1)
+    for i in range(max(0, GS.target_lives)):
+        screen.blit(heart_img, (WIDTH-50-i*46, 5))
+    spd_lbl = F_TINY.render(f"Velocidade: x{GS.speed_mult:.1f}", True, LIGHT_PURPLE)
+    screen.blit(spd_lbl, spd_lbl.get_rect(centerx=WIDTH//2, y=16))
+    screen.blit(F_TINY.render(f"Tiros: {GS.ammo}/{GS.max_ammo}", True, CYAN), (16, 16))
+
+    draw_ammo_bar(screen)
+
+    mx, my = pygame.mouse.get_pos()
+    for ev in events:
+        if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 1:
+            shoot(mx, my)
+    draw_gun_cursor(screen, mx, my)
+
+
+def render_win(events):
+    global state
+    draw_bg(screen, t)
+    for i in range(12):
+        angle = t * 1.5 + i * (math.pi * 2 / 12)
+        r  = 180 + 30 * math.sin(t * 2 + i)
+        cx = WIDTH//2  + int(r * math.cos(angle))
+        cy = HEIGHT//2 + int(r * 0.5 * math.sin(angle))
+        pygame.draw.circle(screen, [GOLD,CYAN,PINK,GREEN,LIGHT_PURPLE][i%5], (cx,cy), 5)
+    draw_panel(screen, pygame.Rect(80, 100, WIDTH-160, HEIGHT-200), alpha=220)
+    draw_title(screen, "PARABÉNS!", 130, GOLD)
+    line1 = F_BIG.render(f"Você matou {target_name}!", True, WHITE)
+    screen.blit(line1, line1.get_rect(centerx=WIDTH//2, y=220))
+    char_surf = get_preview_surf(body_sel, outfit_sel, hair_sel)
+    char_copy = char_surf.copy()
+    cw, ch = char_copy.get_size()
+    pygame.draw.line(char_copy, RED, (0,0), (cw,ch), 8)
+    pygame.draw.line(char_copy, RED, (cw,0), (0,ch), 8)
+    screen.blit(char_copy, (WIDTH//2-cw//2, 290))
+    btn_menu = Button((WIDTH//2-150, HEIGHT-110, 300, 60), "Menu Principal", F_MED)
+    btn_menu.draw(screen)
+    for ev in events:
+        if btn_menu.clicked(ev): state = ST_MENU
+
+
+def render_lose(events):
+    global state, input_text
+    draw_bg(screen, t)
+    draw_panel(screen, pygame.Rect(80, 100, WIDTH-160, HEIGHT-200), alpha=220)
+    draw_title(screen, "FIM DE JOGO", 120, RED)
+    l1 = F_BIG.render(f"{target_name} venceu!", True, PINK)
+    screen.blit(l1, l1.get_rect(centerx=WIDTH//2, y=210))
+    l2 = F_MED.render("você falhou...", True, (200,100,100))
+    screen.blit(l2, l2.get_rect(centerx=WIDTH//2, y=260))
+    for i, s in enumerate([f"Vidas restantes do alvo: {GS.target_lives}",
+                            f"Tiros disparados: {GS.shots_fired}"]):
+        lbl = F_SMALL.render(s, True, LIGHT_PURPLE)
+        screen.blit(lbl, lbl.get_rect(centerx=WIDTH//2, y=320+i*32))
+    btn_retry = Button((WIDTH//2-160, HEIGHT-120, 320, 55), "Tente novamente", F_MED)
+    btn_menu  = Button((WIDTH//2-120, HEIGHT- 52, 240, 44), "Menu Principal", F_SMALL)
+    btn_retry.draw(screen); btn_menu.draw(screen)
+    for ev in events:
+        if btn_retry.clicked(ev): start_game(); state = ST_GAME
+        if btn_menu.clicked(ev):  input_text = ""; state = ST_MENU
