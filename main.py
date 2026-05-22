@@ -576,3 +576,48 @@ def render_preview(events):
         if ev.type == pygame.MOUSEBUTTONDOWN and ev.button == 1:
             shoot(mx, my)
     draw_gun_cursor(screen, mx, my)
+
+def render_win(events):
+    global state
+    draw_bg(screen, t)
+    for i in range(12):
+        angle = t * 1.5 + i * (math.pi * 2 / 12)
+        r  = 180 + 30 * math.sin(t * 2 + i)
+        cx = WIDTH//2  + int(r * math.cos(angle))
+        cy = HEIGHT//2 + int(r * 0.5 * math.sin(angle))
+        pygame.draw.circle(screen, [GOLD,CYAN,PINK,GREEN,LIGHT_PURPLE][i%5], (cx,cy), 5)
+    draw_panel(screen, pygame.Rect(80, 100, WIDTH-160, HEIGHT-200), alpha=220)
+    draw_title(screen, "PARABÉNS!", 130, GOLD)
+    line1 = F_BIG.render(f"Você matou {target_name}!", True, WHITE)
+    screen.blit(line1, line1.get_rect(centerx=WIDTH//2, y=220))
+    char_surf = get_preview_surf(body_sel, outfit_sel, hair_sel)
+    char_copy = char_surf.copy()
+    cw, ch = char_copy.get_size()
+    pygame.draw.line(char_copy, RED, (0,0), (cw,ch), 8)
+    pygame.draw.line(char_copy, RED, (cw,0), (0,ch), 8)
+    screen.blit(char_copy, (WIDTH//2-cw//2, 290))
+    btn_menu = Button((WIDTH//2-150, HEIGHT-110, 300, 60), "Menu Principal", F_MED)
+    btn_menu.draw(screen)
+    for ev in events:
+        if btn_menu.clicked(ev): state = ST_MENU
+
+
+def render_lose(events):
+    global state, input_text
+    draw_bg(screen, t)
+    draw_panel(screen, pygame.Rect(80, 100, WIDTH-160, HEIGHT-200), alpha=220)
+    draw_title(screen, "FIM DE JOGO", 120, RED)
+    l1 = F_BIG.render(f"{target_name} venceu!", True, PINK)
+    screen.blit(l1, l1.get_rect(centerx=WIDTH//2, y=210))
+    l2 = F_MED.render("você falhou...", True, (200,100,100))
+    screen.blit(l2, l2.get_rect(centerx=WIDTH//2, y=260))
+    for i, s in enumerate([f"Vidas restantes do alvo: {GS.target_lives}",
+                            f"Tiros disparados: {GS.shots_fired}"]):
+        lbl = F_SMALL.render(s, True, LIGHT_PURPLE)
+        screen.blit(lbl, lbl.get_rect(centerx=WIDTH//2, y=320+i*32))
+    btn_retry = Button((WIDTH//2-160, HEIGHT-120, 320, 55), "Tente novamente", F_MED)
+    btn_menu  = Button((WIDTH//2-120, HEIGHT- 52, 240, 44), "Menu Principal", F_SMALL)
+    btn_retry.draw(screen); btn_menu.draw(screen)
+    for ev in events:
+        if btn_retry.clicked(ev): start_game(); state = ST_GAME
+        if btn_menu.clicked(ev):  input_text = ""; state = ST_MENU
