@@ -5,7 +5,9 @@ import random
 import os
 import numpy as np
 
+pygame.mixer.pre_init(frequency=44100, size=-16, channels=2, buffer=512)
 pygame.init()
+pygame.mixer.init()
 
 WIDTH, HEIGHT = 900, 650
 FPS = 60
@@ -221,6 +223,27 @@ try:
         SPACE_BG = pygame.transform.smoothscale(raw_bg, (WIDTH, HEIGHT))
     else:
         SPACE_BG = None
+
+    def load_sound(name):
+        path = os.path.join(ASSETS, name)
+        if os.path.exists(path):
+            return pygame.mixer.Sound(path)
+        print(f"Aviso: som '{name}' nao encontrado")
+        return None
+
+    SND_SHOOT   = load_sound("tiro.mp3")
+    SND_HIT     = load_sound("menos1vida.mp3")
+    SND_WIN     = load_sound("ganhar jogo.mp3")
+    SND_LOSE    = load_sound("perder jogo.mp3")
+    if SND_SHOOT: SND_SHOOT.set_volume(0.4)
+    if SND_HIT:   SND_HIT.set_volume(1.0)
+    if SND_WIN:   SND_WIN.set_volume(0.9)
+    if SND_LOSE:  SND_LOSE.set_volume(0.9)
+
+    pygame.mixer.set_num_channels(16)
+    CH_SHOOT = pygame.mixer.Channel(0)
+    CH_HIT   = pygame.mixer.Channel(1)
+    CH_END   = pygame.mixer.Channel(2)
 except Exception as e:
     import traceback
     print(f"Asset load error: {e}")
@@ -358,6 +381,7 @@ def shoot(mx, my):
     for star in GS.stars[:]:
         sx, sy, l, ml = star
         if math.hypot(mx - sx, my - sy) < 28:
+            if SND_SHOOT: CH_SHOOT.play(SND_SHOOT)
             GS.ammo = min(GS.ammo + GS.star_bonus, GS.max_ammo)
             GS.stars.remove(star)
             GS.shot_effects.append([sx, sy, 30, 30, GOLD])
@@ -371,12 +395,17 @@ def shoot(mx, my):
         GS.shot_effects.append([mx, my, 25, 25, RED])
         GS.speed_mult += 0.35
         if GS.target_lives <= 0:
+            if SND_WIN: CH_END.play(SND_WIN)
             state = ST_WIN
+        else:
+            if SND_HIT: CH_HIT.play(SND_HIT)
     else:
+        if SND_SHOOT: CH_SHOOT.play(SND_SHOOT)
         GS.miss_flash = 8
         GS.shot_effects.append([mx, my, 15, 15, CYAN])
 
     if GS.ammo <= 0 and GS.target_lives > 0:
+        if SND_LOSE: CH_END.play(SND_LOSE)
         state = ST_LOSE
 
 def draw_bg(surf, t_val):
