@@ -11,6 +11,9 @@ pygame.mixer.init()
 
 WIDTH, HEIGHT = 900, 650
 FPS = 60
+MUSIC_VOL_MENU = 0.5
+MUSIC_VOL_GAME = 0.1
+
 ASSETS = os.path.join(os.path.dirname(__file__), "assets")
 
 BLACK        = (0,   0,   0)
@@ -236,6 +239,13 @@ try:
     SND_WIN     = load_sound("ganhar jogo.mp3")
     SND_LOSE    = load_sound("perder jogo.mp3")
     if SND_SHOOT: SND_SHOOT.set_volume(0.4)
+    musica_path = os.path.join(ASSETS, "musica de fundo.mp3")
+    if os.path.exists(musica_path):
+        pygame.mixer.music.load(musica_path)
+        pygame.mixer.music.set_volume(MUSIC_VOL_MENU)
+        pygame.mixer.music.play(loops=-1)
+    else:
+        print("Aviso: 'musica de fundo.mp3' nao encontrada")
     if SND_HIT:   SND_HIT.set_volume(1.0)
     if SND_WIN:   SND_WIN.set_volume(0.9)
     if SND_LOSE:  SND_LOSE.set_volume(0.9)
@@ -732,6 +742,9 @@ def main():
 
     while True:
         events = []
+        target_vol = MUSIC_VOL_GAME if state == ST_GAME else MUSIC_VOL_MENU
+        if pygame.mixer.music.get_volume() != target_vol:
+            pygame.mixer.music.set_volume(target_vol)
         for ev in pygame.event.get():
             if ev.type == pygame.QUIT:
                 pygame.quit(); sys.exit()
