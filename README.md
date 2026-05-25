@@ -1,3 +1,5 @@
+
+
 ## Todo Mundo Odeia o X
 
 Um jogo de tiro feito em **Python + Pygame**, com tema espacial e personagem customizável. O jogador cria seu próprio "alvo" (escolhendo corpo, roupa, cabelo e nome) e precisa derrotá-lo antes que a munição acabe — enquanto o alvo se move pelo cenário e fica cada vez mais rápido a cada tiro disparado.
@@ -33,3 +35,6 @@ Para o jogo funcionar corretamente, dentro da pasta assets estam os seguintes ar
 
 ## Executando o Jogo
 Abra o terminal na pasta do projeto e rode o comando: python main.py
+
+## Vídeo do jogo funcionando
+https://drive.google.com/file/d/12YvPOcW4A8PKFdz0rt8p20L6zmh6UvZj/view?usp=sharing
