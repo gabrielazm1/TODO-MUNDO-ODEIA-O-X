@@ -304,7 +304,6 @@ try:
             return pygame.mixer.Sound(path)                                  # Carrega o som como objeto Sound
         print(f"Aviso: som '{name}' nao encontrado")
         return None                                                           # Retorna None se o arquivo não existir
-
     # ── Carrega os 4 efeitos sonoros do jogo ──
     SND_SHOOT   = load_sound("tiro.mp3")           # Som disparado a cada tiro normal
     SND_HIT     = load_sound("menos1vida.mp3")     # Som quando o alvo é atingido
@@ -359,7 +358,6 @@ OUTFIT_OPTIONS = [
     {"name": "Agasalho Verde", "sheet_idx": 4, "col": 1},
     {"name": "Calça Escura",   "sheet_idx": 5, "col": 1},
 ]
-
 HAIR_OPTIONS = [
     {"name": "Longo Loiro",  "row": 4, "col": 1},          # row/col = posição na sprite sheet Hairs.png
     {"name": "Longo Moreno", "row": 0, "col": 1},
