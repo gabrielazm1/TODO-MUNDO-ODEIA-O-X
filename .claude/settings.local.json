@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import pydub; print\\('pydub OK'\\)\")",
+      "Bash(python -c \"import moviepy; print\\('moviepy OK'\\)\")",
+      "Bash(python -c \"import imageio_ffmpeg; print\\(imageio_ffmpeg.get_ffmpeg_exe\\(\\)\\)\")"
+    ]
+  }
+}
